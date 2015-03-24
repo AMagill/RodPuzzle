@@ -1,0 +1,91 @@
+<link rel="import" href="../../packages/polymer/polymer.html">
+<link rel="import" href="../../packages/paper_elements/paper_input.html">
+<link rel="import" href="../../packages/core_elements/core_input.html">
+<link rel="import" href="../../packages/core_elements/core_selector.html">
+
+<polymer-element name="maze-view">
+  <template>
+    <style>
+    .list {
+      display: block;
+      border: 1px solid #ccc;
+      border-bottom: none;
+      background: #999;
+      color: white;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .list > * {
+      height: 25px;
+      width: 25px;
+      line-height: 25px;
+      border-bottom: 1px solid #ccc;
+    }
+    
+    .list > *.core-selected {
+      background: #333;
+    }
+    
+    table {
+      border: 1px solid black;
+    }
+
+    #input {
+    }
+    
+    .grid {
+      border-collapse: collapse;
+      border: 2px solid black;
+      outline: 2px solid black;
+    }
+    
+    td {
+      text-align: center;
+      vertical-align: center;
+    }
+    
+    td.gridCell {
+      width: 25px;
+      height: 25px;
+      border: 5px #EEE solid;
+    }
+    td.nf {
+      background: #888;
+    }
+    
+    </style>
+    
+    <table>
+      <tr>
+        <th template repeat="{{rodLabel in rods.rodLabels}}">
+          {{rodLabel}}
+        </th>
+      </tr>
+      <tr>
+        <td template repeat="{{rodLabel in rods.rodLabels}}">
+          <core-selector id="input" class="list" multi on-core-select="{{select}}" selected="{{rods.selected[rodLabel]}}">
+            <template repeat="{{posLabel in rods.posLabels}}">
+              <div>{{posLabel}}</div>
+            </template>
+          </core-selector>
+        </td>
+      </tr>
+    </table>
+
+    <div id="grids">
+      <template repeat="{{z in grid.axisLabels[2]}}">
+        <table class="grid">
+          <tr template repeat="{{y in grid.axisLabels[1]}}">
+            <td template repeat="{{x in grid.axisLabels[0]}}" class="gridCell {{getCell(x, y, z).cssClass}}">
+              {{getCell(x, y, z).text}}
+            </td>
+          </tr>
+        </table>
+      </template>
+    </div>
+
+  </template>
+  <script type="application/dart" src="maze_view.dart"></script>
+</polymer-element>
