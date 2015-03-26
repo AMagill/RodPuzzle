@@ -1,39 +1,86 @@
 library rods;
-import 'package:polymer/polymer.dart';
+import 'dart:convert';
 
-abstract class Rods extends Observable {
-  static final List<int> dimensions = [0];
-  @observable List<String> rodLabels = [];
-  @observable List<String> posLabels = [];
-  @observable Map<String, List<int>> selected = new Map<String, List<int>>();
-  List<List<int>> GetConstraints();  
-  List<List<int>> GetPairConstraints(int iRod1, int iRod2) {
+abstract class Rods {
+  Map<String, List<int>> selected = new Map<String, List<int>>();
+  
+  static List<int> get staticDims => [];
+  List<int>    get dimensions => [];
+  List<String> get faceLabels => [];
+  List<String> get posLabels  => [];
+  List<int>    get faceMap    => [];
+  
+  Rods() {
+    for (var label in faceLabels) {
+      selected[label] = new List<int>();
+    }
+  }
+  
+  List<List<int>> GetConstraints();
+  
+  List<List<int>> GetPairConstraints(int iFace1, int iFace2) {
     var constraints = [];
-    var rod1 = rodLabels[iRod1];
-    var rod2 = rodLabels[iRod2];
+    var face1 = faceLabels[iFace1];
+    var face2 = faceLabels[iFace2];
 
-    for (var item1 in selected[rod1]) {
+    for (var item1 in selected[face1]) {
       if (!(item1 is int)) continue;
-      for (var item2 in selected[rod2]) {
+      for (var item2 in selected[face2]) {
+        // A bug in polymer is adding empty sublists, so skip over them.
         if (!(item2 is int)) continue;
-        constraints.add([iRod1, item1, iRod2, item2]);
+        
+        var rod1 = faceMap[iFace1];
+        var rod2 = faceMap[iFace2];
+
+        // The two must be in the same group
+        if (item1 ~/ dimensions[rod1] != 
+            item2 ~/ dimensions[rod2])
+          continue;
+        
+        constraints.add([faceMap[iFace1], item1 % dimensions[rod1], 
+                         faceMap[iFace2], item2 % dimensions[rod2]]);
       }
     }
 
     return constraints;
   }
+  
+  void Clear() {
+    for (var face in selected.values) {
+      face.clear();
+    }
+  }
+  
+  String GetCode() {
+    var pruned = {};
+    for (var face in selected.keys) {
+      if (selected[face].length > 0)
+        pruned[face] = selected[face];
+    }
+    return JSON.encode(pruned);
+  }
+  
+  void SetCode(String code) {
+    var faces = JSON.decode(code);
+    
+    Clear();
+    for (var face in faces.keys) {
+      for (var item in faces[face]) {
+        selected[face].add(faces[face]);
+      }
+    }
+    
+  }
 }
 
 class RodsOneSided extends Rods {
-  static final List<int> dimensions   = [5, 5, 5];
+  static List<int> get staticDims => [5, 5, 5];
+  List<int>    get dimensions => [5, 5, 5];
+  List<String> get faceLabels => ['A', 'B', 'C'];
+  List<String> get posLabels  => ['1', '2', '3', '4', '5'];
+  List<int>    get faceMap    => [0, 1, 2];
   
-  RodsOneSided() {
-    rodLabels = ['A', 'B', 'C'];
-    posLabels = ['1', '2', '3', '4', '5'];
-    for (var label in rodLabels) {
-      selected[label] = new List<int>();
-    }
-  }
+  RodsOneSided() : super();
   
   List<List<int>> GetConstraints(){
     var constraints = [];
@@ -47,16 +94,15 @@ class RodsOneSided extends Rods {
 }
 
 class RodsThreeSided extends Rods {
-  static final List<int> dimensions = [5, 5, 5];
-  final List<int> dimensionMap = [0, 0, 0, 1, 1, 1, 2, 2, 2];
+  static List<int> get staticDims => [5, 5, 5];
+  List<int>    get dimensions => [5, 5, 5];
+  List<String> get faceLabels => ['-A', 'A', 'A-', '-B', 'B', 'B-', '-C', 'C', 'C-'];
+  List<String> get posLabels  => ['1', '2', '3', '4', '5', 
+                                  '1', '2', '3', '4', '5',
+                                  '1', '2', '3', '4', '5'];  
+  List<int>    get faceMap    => [0, 0, 0, 1, 1, 1, 2, 2, 2];
   
-  RodsThreeSided() {
-    rodLabels = ['-A', 'A', 'A-', '-B', 'B', 'B-', '-C', 'C', 'C-'];
-    posLabels = ['1', '2', '3', '4', '5'];
-    for (var label in rodLabels) {
-      selected[label] = new List<int>();
-    }
-  }
+  RodsThreeSided() : super();
   
   List<List<int>> GetConstraints(){
     var constraints = [];
@@ -68,11 +114,6 @@ class RodsThreeSided extends Rods {
     constraints.addAll(GetPairConstraints(8, 0)); // C-A
     constraints.addAll(GetPairConstraints(2, 3)); // A-B
     constraints.addAll(GetPairConstraints(5, 6)); // B-C
-    
-    for (var con in constraints) {
-      con[0] = dimensionMap[con[0]];
-      con[2] = dimensionMap[con[2]];
-    }
     
     return constraints;
   }

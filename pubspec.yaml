@@ -5,8 +5,10 @@ environment:
   sdk: '>=1.0.0 <2.0.0'
 dependencies:
   browser: any
-  paper_elements: '>=0.6.1 <0.7.0'
+  core_elements: any
   polymer: '>=0.15.4 <0.16.0'
 transformers:
 - polymer:
     entry_points: web/index.html
+- $dart2js:
+    minify: true

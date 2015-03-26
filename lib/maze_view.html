@@ -1,5 +1,4 @@
 <link rel="import" href="../../packages/polymer/polymer.html">
-<link rel="import" href="../../packages/paper_elements/paper_input.html">
 <link rel="import" href="../../packages/core_elements/core_input.html">
 <link rel="import" href="../../packages/core_elements/core_selector.html">
 
@@ -35,6 +34,12 @@
     #input {
     }
     
+    #grids {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    
     .grid {
       border-collapse: collapse;
       border: 2px solid black;
@@ -42,8 +47,11 @@
     }
     
     td {
+      user-select: none;
+      -webkit-user-select: none; 
       text-align: center;
       vertical-align: center;
+      cursor: pointer;
     }
     
     td.gridCell {
@@ -51,21 +59,30 @@
       height: 25px;
       border: 5px #EEE solid;
     }
-    td.nf {
-      background: #888;
+    td.block {
+      background: black;
+    }
+    td.deadend {
+      background: lightPink;
+    }
+    td.unreachable {
+      background: red;
+    }
+    td.path {
+      background: limeGreen;
     }
     
     </style>
     
     <table>
       <tr>
-        <th template repeat="{{rodLabel in rods.rodLabels}}">
-          {{rodLabel}}
+        <th template repeat="{{faceLabel in rods.faceLabels}}">
+          {{faceLabel}}
         </th>
       </tr>
       <tr>
-        <td template repeat="{{rodLabel in rods.rodLabels}}">
-          <core-selector id="input" class="list" multi on-core-select="{{select}}" selected="{{rods.selected[rodLabel]}}">
+        <td template repeat="{{faceLabel in rods.faceLabels}}">
+          <core-selector id="input" class="list" multi on-core-select="{{select}}" selected="{{rods.selected[faceLabel]}}">
             <template repeat="{{posLabel in rods.posLabels}}">
               <div>{{posLabel}}</div>
             </template>
@@ -73,6 +90,14 @@
         </td>
       </tr>
     </table>
+    <!--div><textarea cols="40" rows="10" type="text" value="{{code}}"></textarea></div-->
+    <!--div><input type="button" value="Set" on-click="{{setCode}}"></div-->
+    <div>
+      <input type="button" value="Clear" on-click="{{rods.Clear}}">
+      <!--input type="button" value="Rotate L" on-click="{{grid.RotateL}}">
+      <input type="button" value="Rotate R" on-click="{{grid.RotateR}}"-->
+    </div>
+    
 
     <div id="grids">
       <template repeat="{{z in grid.axisLabels[2]}}">
