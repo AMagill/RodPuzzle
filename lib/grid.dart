@@ -139,7 +139,7 @@ class Grid extends Observable {
       while (todo.isNotEmpty) {
         var cell = todo.removeFirst();
         List<Cell> minNeighbors = new List<Cell>();
-        int min = 999999999;
+        int min = cell.distance;
         for (var neighbor in cell.neighbors) {
           if (neighbor.blocked) continue;
           if (neighbor.shortestPath) continue;
